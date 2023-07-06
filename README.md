@@ -40,5 +40,6 @@ This SISMID module will require R version XXX and the following R packages.
 
 If you have any questions feel free to contact the following course instructors and TA's.
 
-Instructors: [Lance Waller](lwaller@emory.edu), [Howard Chang](hhchang.emory.edu)
-Teaching Assistant: [Thomas Hsiao](thomas.hsiao@emory.edu)
+Instructors: [Lance Waller](mailto:lwaller@emory.edu), [Howard Chang](mailto:hhchang.emory.edu)
+
+Teaching Assistant: [Thomas Hsiao](mailto:thomas.hsiao@emory.edu)
