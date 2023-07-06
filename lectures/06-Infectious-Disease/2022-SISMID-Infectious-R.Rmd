@@ -1,0 +1,274 @@
+---
+title: "SISMID 2022: R Notes on Infectious Disease Data"
+author: |
+  | Jon Wakefield
+  | Departments of Biostatistics and Statistics
+  | University of Washington
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+opts_chunk$set(collapse=TRUE, fig.align='center', tidy=TRUE, tidy.opts=list(blank=TRUE, width.cutoff=60,strip.white=TRUE), warning=FALSE,message=FALSE,cache=T)
+```
+
+## Overview
+
+We illustrate the use of the ``hhh4`` function that fits the Held et al. (2005) epidemic-endemic model class, within the ``surveillance`` package. For more details see [Meyer et al (2017)](https://www.jstatsoft.org/article/view/v077i11).
+
+## Lower Saxony Measles Data
+
+As an example of the epidemic/endemic framework first described by Held et al. (2005) and expanded upon in various papers, see in particular Held and Paul (2012).
+
+We examine spatio-temporal count data on measles incidence.
+These data are in the ``surveillance`` package and data consist of weekly measles counts over 2001 and 2002, for each of 17 administrative districts in the  Weser-Ems region of Lower Saxony, Germany.
+
+Included in the dataset is a $17 \times 17$ matrix of 0/1 entries indicating which areas share a common boundary.
+
+There is also the population total that is contained in each area, and various other data including vaccination information.
+
+These notes are based on the vignette:
+
+\url{https://cran.r-project.org/package=surveillance/vignettes/hhh4_spacetime.pdf}
+
+The data ``measlesWeserEms`` are of  class ``sts``.
+
+The data object also contain a map of the region, as a ``SpatialPolygonsDataFrame``.
+
+```{r}
+library(surveillance)
+data("measlesWeserEms")
+counts <- observed(measlesWeserEms)
+map <- measlesWeserEms@map
+populationFrac <- measlesWeserEms@populationFrac
+```
+
+
+Create the neighborhood information we will need later.
+
+
+```{r}
+weserems_adjmat <- poly2adjmat(map)
+rowSums(weserems_adjmat) 
+weserems_nbOrder <- nbOrder(weserems_adjmat, maxlag = Inf)
+head(weserems_nbOrder)
+```
+
+
+We make an ``sts`` dataframe that will help with plotting.
+
+
+```{r}
+measlesWeserEms <- sts(counts, start = c(2001, 1), frequency = 52,
+  population = populationFrac, 
+  neighbourhood = weserems_nbOrder, map = map)
+```
+
+Time series of total counts:
+
+
+```{r, fig.height=5.5,fig.width=5.5}
+plot(measlesWeserEms, type = observed ~ time)
+```
+
+Map of total counts with labels:
+
+
+```{r, tidy.opts=list(width.cutoff=40)}
+plot(measlesWeserEms, type = observed ~ unit,
+     population = measlesWeserEms@map$POPULATION / 100000,
+     labels = list(font = 2), colorkey = list(space = "right"),
+     sp.layout = layout.scalebar(measlesWeserEms@map, corner = c(0.05, 0.05),
+     scale = 50, labels = c("0", "50 km"), height = 0.03))
+
+```
+
+
+We plot time series of counts by area.
+Two areas contain all zeroes, so do not plot these.
+
+
+```{r}
+autoplot.sts(measlesWeserEms, 
+  units = which(colSums(observed(measlesWeserEms)) > 0)) +
+  ggplot2::theme(text = ggplot2::element_text(size = 7),
+                 axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+```
+
+The commands 
+
+* ``library(gridExtra)``
+
+* ``animate(measlesWeserEms)``
+
+produce an animation.
+
+Try them yourself!
+
+
+## Model framework
+
+Notation: $Y_{it}$ are weekly counts of measles infections in are $i$, $N_{i}$ are  population counts in area $i$, while $e_i$ are population fractions
+
+We assume a negative binomial model with
+$$E[Y_{it} | \mu_{it}] = \mu_{it}$$
+and
+$$var[Y_{it} | \mu_{it}] = \mu_{it}(1+\psi \mu_{it})$$
+so that $\psi=0$ corresponds to a Poisson model.
+
+
+We first fit the model
+$$\mu_{it} = \underbrace{\lambda^{AR}}_{\exp(\alpha_0^{AR})} y_{i, t-1}  + \underbrace{\lambda^{NE}  }_{\exp(\alpha_0^{NE})} \sum_{j=1}^n  w_{ji}y_{j, t-1} + e_{i} \lambda^{EN}_{t},$$
+with endemic term:
+
+$$
+\log(\lambda^{EN}_{t} ) = \alpha_0^{EN}+\alpha_1 t + \gamma \sin(\omega t) + \delta \cos(\omega t).
+$$
+
+In this model
+
+* $\lambda^{AR}$ is the contribution from the susceptible's own area 
+
+* $\lambda^{NE}$ is the contribution from the susceptible's neighboring areas
+
+* $w_{ji}$ are binary indicators of sharing a boundary
+
+* $\lambda^{EN}_{t}$ is the endemic term,
+
+* $\alpha_1$ is a slope parameter describing the large scale endemic temporal trend,
+
+* $\gamma$  and $\delta$ are seasonal parameters and  do not vary across areas, $\omega = (2\pi )/52$.
+
+
+``NegBin1`` gives a single overdisperion parameter, i.e., common to all areas.
+
+In the following analysis we use biweekly aggregated measles counts.
+
+
+```{r}
+measlesWeserEms <- aggregate(measlesWeserEms, by = "time", nfreq = 26)
+measlesModel_basic <- list(end = list(f = addSeason2formula(~1 + t, period = measlesWeserEms@freq), offset = population(measlesWeserEms)),
+ar = list(f = ~1),
+ne = list(f = ~1, weights = neighbourhood(measlesWeserEms) == 1),
+family = "NegBin1")
+measlesFit_basic <- hhh4(stsObj = measlesWeserEms, control = measlesModel_basic)
+```
+
+```{r}
+summary(measlesFit_basic, idx2Exp = TRUE, amplitudeShift = TRUE)
+```
+
+
+## Model results
+
+```{r}
+confint(measlesFit_basic,parm="overdisp")
+```    
+
+This interval suggests a Poisson model, with $\psi=0$ would be a poor fit. More confirmation of this by examining the AIC of the difference. The AIC is given by
+$$ - 2\mbox{ log-likelihood }+2 p,$$
+where $p$ is the number of parameters. For a sequence of models, the one with the smallest AIC is preferred. Here, the negative binomial model is strongly preferred.
+
+```{r}
+AIC(measlesFit_basic, update(measlesFit_basic, family = "Poisson"))
+```
+ 
+ We provide summaries of the fits in those areas with more than 50 counts.
+ 
+```{r, tidy.opts=list(width.cutoff=70)}
+districts2plot <- which(colSums(observed(measlesWeserEms)) > 50)
+par(mfrow = c(2,3), mar = c(3, 5, 2, 1), las = 1)
+op <- par(cex = 0.4)
+plot(measlesFit_basic, type = "fitted", units = districts2plot,
+     hide0s = TRUE, par.settings = NULL, legend = TRUE)
+plot(measlesFit_basic, type = "fitted", total = TRUE,
+     hide0s = TRUE, par.settings = NULL, legend = FALSE) -> fitted_components
+```
+
+We now plot the endemic (seasonal) component.
+
+
+```{r}
+plot(measlesFit_basic,type="season",components="end",main="")
+```
+
+
+## Add Random Effects
+
+We now add area-specific random effects to the endemic and AR components.
+
+```{r, tidy=F}
+measlesFit_ri <- update(measlesFit_basic,
+   end = list(f = update(formula(measlesFit_basic)$end, ~. + ri() - 1)),
+   ar  = list(f = update(formula(measlesFit_basic)$ar,  ~. + ri() - 1)))
+```
+
+Examine the summary of the fit.
+
+```{r}
+summary(measlesFit_ri, amplitudeShift = TRUE, maxEV = TRUE)
+```
+
+
+Random effect point estiamtes.
+
+```{r}
+ranef(measlesFit_ri, tomatrix = TRUE)
+```
+
+Map the AR random effects
+
+```{r}
+plot(measlesFit_ri, type = "ri", component = "ar", exp = TRUE,
+             labels = list(cex = 0.4))
+```
+
+Map the END random effects
+
+
+```{r,}
+plot(measlesFit_ri, type = "ri", component = "end", exp = TRUE,
+             labels = list(cex = 0.4))
+```
+
+We examine the fits to the areas with more than 50 cases, and overall.
+
+Blue is the AR contribution, Grey is endemic, Orange is NE
+
+```{r, fig.height=4,fig.width=6}
+par(mfrow = c(2,3), mar = c(3, 5, 2, 1), las = 1)
+plot(measlesFit_ri, type = "fitted", units = districts2plot,
+     hide0s = TRUE, par.settings = NULL, legend = FALSE)
+plot(measlesFit_ri, type = "fitted", total = TRUE,
+     hide0s = TRUE, par.settings = NULL, legend = FALSE)
+```
+
+
+## ```hh4``` for Covid-19 modeling
+
+
+* [Alipour etal 2020](http://hdl.handle.net/10419/222850)
+
+* [Benimana et al 2021](https://doi.org/10.1016/j.gloepi.2021.100058)
+
+* BerlamannHaustein2020       2020     https://www.cesifo.org/DocDL/cesifo1_wp8446.pdf
+
+* BND2021                             2021     
+https://rss.org.uk/news-publication/publications/journals/special-topic-meeting-on-r/
+
+* CelaniGiudici2021                 2021     https://doi.org/10.1016/j.spasta.2021.100528
+
+* Dickson2020                        2020     https://doi.org/10.1007/s11071-020-05853-7
+
+* FritzKauermann2020             2020     https://arxiv.org/abs/2008.03013
+
+* Fronterre2020                      2020     https://doi.org/10.1101/2020.05.15.20102715
+
+* Giuliani2020                         2020     https://doi.org/10.2139/ssrn.3559569
+
+* Grimee2021                         2021     https://doi.org/10.1101/2021.05.19.21257329
+
+* Rui2021                               2021     https://doi.org/10.3390/ijerph18020774
+
+* Ssentongo2021                    2021    https://doi.org/10.1073/pnas.2026664118
