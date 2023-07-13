@@ -40,7 +40,7 @@ This SISMID module will require R version XXX and the following R packages.
 
 [Spatial Data Science](https://r-spatial.org/book/)
 
-[Spatial-Temporal Statistics with R] (https://spacetimewithr.org/)
+[Spatial-Temporal Statistics with R](https://spacetimewithr.org/)
 
 [Geospatial Health Data: Modeling and Visualization with R-INLA and Shiny](https://www.paulamoraga.com/book-geospatial/)
 
