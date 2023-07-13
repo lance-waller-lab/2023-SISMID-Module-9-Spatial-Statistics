@@ -36,6 +36,16 @@ This SISMID module will require R version XXX and the following R packages.
 
 [Waller, L. and Gotway, C. (2004). Applied Spatial Statistics for Public Health Data. New York, John Wiley and Sons.](https://onlinelibrary-wiley-com.proxy.library.emory.edu/doi/book/10.1002/0471662682)
 
+[Geocomputation with R](https://r.geocompx.org/index.html)
+
+[Spatial Data Science](https://r-spatial.org/book/)
+
+[Spatial-Temporal Statistics with R] (https://spacetimewithr.org/)
+
+[Geospatial Health Data: Modeling and Visualization with R-INLA and Shiny](https://www.paulamoraga.com/book-geospatial/)
+
+[Advanced Spatial Modeling with Stochastic Partial Differential Equations Using R and INLA](https://becarioprecario.bitbucket.io/spde-gitbook/index.html)
+
 ## Contact
 
 If you have any questions feel free to contact the following course instructors and TA's.
