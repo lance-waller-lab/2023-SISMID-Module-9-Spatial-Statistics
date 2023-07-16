@@ -19,15 +19,24 @@ This module assumes knowledge of the material in Module 1: Probability and Stati
 
 This SISMID module exclusively uses R. We recommend R 4.0 and above. You can download a recent version [here](https://www.r-project.org/).
 
-We also recommend using RStudio as the main GUI interface. You can install a free version [here](https://posit.co/download/rstudio-desktop/). 
+We also recommend using RStudio as the main GUI interface. You can install the free version [here](https://posit.co/download/rstudio-desktop/). 
 
 Installation of R and RStudio should proceed smoothly on most operating systems. Detailed instructions can be found [here](http://rafalab.dfci.harvard.edu/dsbook/installing-r-rstudio.html). 
+
+The module makes use of other specific R packages as well. You can install them using the `install.packages("PACKAGE NAME HERE")` command. R will let you know what packages you do not have installed when you try to run a script in full.
 
 ## Installing R-INLA
 
 You will need to download the INLA package to run the code in this module. 
 
 The [INLA](https://www.r-inla.org/) package performs approximate Bayesian inference for latent Gaussian models. Installing the package is a bit different than normal since it is not on CRAN, the central software repository for R packages. Detailed instructions for installing the stable/testing can be found [here](https://www.r-inla.org/download-install).
+
+## How to access code 
+
+In general, you will need to 
+
+1. [**Clone** the module repository from GitHub to a filepath on your local desktop](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+2. [Open the code in RStudio Desktop by opening the R Project file `2023-SISMID-Spatial-Epi.Rproj`](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects). 
 
 ## Schedule
 
