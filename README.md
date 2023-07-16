@@ -15,9 +15,19 @@ Many examples will be presented, with analysis carried out in the R programming 
 
 This module assumes knowledge of the material in Module 1: Probability and Statistical Inference, though not necessarily from taking that module. Some prior knowledge of R would be helpful.
 
-## Setup
+## Installing R and RStudio
 
-This SISMID module will require R version XXX and the following R packages.
+This SISMID module exclusively uses R. We recommend R 4.0 and above. You can download a recent version [here](https://www.r-project.org/).
+
+We also recommend using RStudio as the main GUI interface. You can install a free version [here](https://posit.co/download/rstudio-desktop/). 
+
+Installation of R and RStudio should proceed smoothly on most operating systems. Detailed instructions can be found [here](http://rafalab.dfci.harvard.edu/dsbook/installing-r-rstudio.html). 
+
+## Installing R-INLA
+
+You will need to download the INLA package to run the code in this module. 
+
+The [INLA](https://www.r-inla.org/) package performs approximate Bayesian inference for latent Gaussian models. Installing the package is a bit different than normal since it is not on CRAN, the central software repository for R packages. Detailed instructions for installing the stable/testing can be found [here](https://www.r-inla.org/download-install).
 
 ## Schedule
 
@@ -48,7 +58,7 @@ This SISMID module will require R version XXX and the following R packages.
 
 ## Contact
 
-If you have any questions feel free to contact the following course instructors and TA's.
+If you have any questions feel free to contact the following course instructors and TA's, or send a message in the class Slack channel.
 
 Instructors: [Lance Waller](mailto:lwaller@emory.edu), [Howard Chang](mailto:hhchang.emory.edu)
 
