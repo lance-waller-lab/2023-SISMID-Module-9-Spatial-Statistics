@@ -8,7 +8,9 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
 ```
 
 ***
@@ -36,25 +38,21 @@ The following attributes are of interest to us:  Population (census), violent cr
 
 ***
 
-First, load the libraries and set my working directory (you'll need to change the working directory to your working directory).
+First, load the libraries. The working directory should automatically be set to the correct one if you opened the R project (`2023-SISMID-Spatial-Epi.Rproj`) through RStudio.  
 
-```{r}
+```{r, warning=FALSE}
 ##Load libraries
 
-#library(maptools)     # loads sp library too
+library(maptools)     # loads sp library too
 library(RColorBrewer) # creates nice color schemes
 library(classInt)     # finds class intervals for continuous variables
 library(spgwr)        # Adds the geographically weighted regression functions
 library(rgdal)        # Provides tool for reading in shapefiles
-library(here)
-
-# Set my working directory (Lance's here for example)
-# setwd("~/OneDrive - Emory University/meetings/SISMID.2021/SISMID.2021.Waller.Rcode")
-
+library(here)         # For constructing filepaths relative to root directory
 ```
 ***
 
-Now to read in the shapefile.  You will need these files in your working directory:
+Now to read in the shapefile.  The following five files all constitute what is a "shapefile." If you downloaded the repository from GitHub correctly, they should all be in your `data` folder. 
 
 + HoustonENAR2012final.shp
 + HoustonENAR2012final.dbf
@@ -209,7 +207,4 @@ associations between alcohol distribution and violence: A
 comparison of geographically weighted regression and spatially
 varying coefficient models".  *Stochastic
 Environmental Research and Risk Assessment*. **21**, 573-588.
-
-We'll return to these data on Friday for our discussion of "Slippery Slopes".
-
 ***
