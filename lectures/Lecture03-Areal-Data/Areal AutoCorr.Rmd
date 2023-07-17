@@ -7,9 +7,15 @@ output: html_document
 # Data Lab 3 Working with Areal Data 
 ***
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
 # 3.1 Working with Spatial Polygons
 
-We will first load a standard data frame consists of several county-level variables: 
+We will first load a standard data frame consisting of several county-level variables: 
 
 * FIPS: 5-digit unique code for county
 * Area: full name of the county
@@ -18,8 +24,17 @@ We will first load a standard data frame consists of several county-level variab
 * Cases: # of chlamydia cases in 2000
 * Income: median household income from Census 2000
 * inc: chlamydia incidence per 10,000 population
+
 ```{r}
 library(here)
+library(sf)
+library(maps)
+library(stringr)
+library(colorRamps)
+library(ggplot2)
+library(spdep)
+library(DCluster)
+
 load ( here("data", "Data.RData") )
 summary (dat)
 ```
@@ -27,8 +42,7 @@ summary (dat)
 Next, we will read in county spatial polygons for the contiguous US in the *maps* package. R can also read in any shapefile via the *sf* package. The *st_as_sf* function converts the map object to an *sf* object, which encodes the ID, polygons, and any unit-specific data value.
 
 ```{r, warning=FALSE}
-library (sf)
-library (maps)
+
 
 county.map = map ("county", region = c("alabama", "georgia"),fill = T,  plot = F)
 county.map = sf::st_as_sf(county.map) #Convert from map object to sf
@@ -78,7 +92,7 @@ dat.areal = cbind (county.map, dat)
 dat.areal[1:3,]
 
 #Option 2
-library (stringr)
+
 data (county.fips) #Load county 5-digit FIPS code
 county.map$FIPS = county.fips$fips[ match (county.map$ID, county.fips$polyname)]
 county.map$FIPS =  str_pad (county.map$FIPS, 5, "left", "0")
@@ -92,7 +106,7 @@ The object *dat.areal*$* now contains the polygon information and the dataframe 
 dim (dat.areal)
 names(dat.areal)
 
-library(colorRamps)
+
 plot (dat.areal["Income"], main = "Median Household Income in 2000")
 plot (dat.areal["inc"],  main = "Chlamydia Incidence (per 10,000) in 2007")
 ```
@@ -100,7 +114,6 @@ plot (dat.areal["inc"],  main = "Chlamydia Incidence (per 10,000) in 2007")
 Or use ggplot. 
 
 ```{r}
-library (ggplot2)
 ggplot() + geom_sf (data = dat.areal, aes (fill = Income))+
   labs(title="Median Household Income in 2000")   +scale_fill_gradient2(low = "white",high = "red", limits = c(0, 80000))
 
@@ -115,7 +128,7 @@ The package *spdep ()* contains a suite of functions for working with areal spat
 
 
 ```{r, warning = FALSE}
-library (spdep)
+
 
 #Because our shapefile here is un-projected, distance operations can be difficult. Alternatively, we can project the data to, for example, the Lambert Conformal Conic North America.
 dat.areal_proj = st_transform(dat.areal, crs = "ESRI:102004")
@@ -305,8 +318,6 @@ We will now focus on performing cluster detection specifically for case incidenc
 First, we perform tests to see if spatial clustering exists. 
 
 ```{r}
-library (DCluster)
-
 dismap = data.frame (Observed = dat.areal$Cases, Pop = dat.areal$Population)
 theta_0 = sum(dismap$Observed)/sum(dismap$Pop)
 dismap$Expected = dismap$Pop * theta_0
