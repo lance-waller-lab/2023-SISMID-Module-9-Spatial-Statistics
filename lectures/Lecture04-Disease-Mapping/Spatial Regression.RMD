@@ -1,6 +1,12 @@
 ---
 output: html_document
 ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
+
+```
 
 
 # SISMID Spatial Satistics
@@ -12,8 +18,14 @@ output: html_document
 We will first load the dataframe with shapefile of chlamydia incidence and income from previous lab.
  
 ```{r}
-library (sf)
+library(sf)
 library(here)
+library(spdep)
+library(ggplot2)
+library(spatialreg)
+library(INLA)
+
+
 load (here("data", "Data_Areal.RData") )
 st_drop_geometry(dat.areal)[1:4,]
 ```
@@ -21,9 +33,6 @@ st_drop_geometry(dat.areal)[1:4,]
 CAR models can be fitted using the *spautolm* function in library *spatialreg*. The function takes a regression formula similar to *lm*, with a spatial weight matrix defined as an *nb2listw* object.  We will examine both first-order and second-order (neighbors of 1-first order neighbors).
 
 ```{r}
-library (spdep)
-library (ggplot2)
-
 dat.areal_proj = st_transform(dat.areal, crs = "ESRI:102004")
 nb = poly2nb (dat.areal_proj)
 nb = nblag (nb, 2) #Create 2nd order and this makes nb into a list
@@ -43,7 +52,6 @@ X = (dat.areal$Income-mean (dat.areal$Income))/1000 #center and scale to per $1,
 fit0 = lm (Y~X)
 
 ##Fit CAR model
-library (spatialreg)
 fit1.car = spautolm (Y~X, family = "CAR", listw = W)
 fit2.car = spautolm (Y~X, family = "CAR", listw = W2)
 ```
@@ -58,8 +66,6 @@ summary (fit1.car)
 Instead of working with a continous rate (assumed Normal), next we will model the case count directly using Poisson regression. We will compare these to a naive analysis where we don't borrow information around neighboring counties. 
 
 ```{r}
-library (spdep)
-
 Y = dat.areal$Case
 P = dat.areal$Population
 X = (dat.areal$Income-mean (dat.areal$Income))/1000 #center and scale to per $1,000
@@ -80,8 +86,6 @@ se.mle = sqrt(Y)/P
 We will use INLA here to perform Bayesian estimation. INLA is an efficient approach to conduct Bayesian analysis with hierarchical models when the latent variables (random effects) are Gaussian. Here we will assume the random effects are either iid (exchangeable) or follow have a spatial structure (i.e., besag or propor Leroux). Specific parametrization of these random effect distributions and priors for hyperparameters can be found here (https://inla.r-inla-download.org/r-inla.org/doc/latent/).
 
 ```{r}
-library (INLA)
-
 #Some data wrangling first
 dat.areal$areal_ID = 1:nrow (dat.areal) #Create a county ID from 1 to 226
 
