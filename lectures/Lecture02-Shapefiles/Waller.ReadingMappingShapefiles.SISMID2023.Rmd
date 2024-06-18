@@ -43,11 +43,10 @@ First, load the libraries. The working directory should automatically be set to 
 ```{r, warning=FALSE}
 ##Load libraries
 #install.packages("pacman")
-pacman::p_load(maptools, # loads sp library too
+pacman::p_load(sf, #replaces "maptools", "rgdal" and other deprecated packages 
                RColorBrewer, # creates nice color schemes
                ClassInt,  # finds class intervals for continuous variables
                spgwr, # Adds the geographically weighted regression functions
-               rgdal, # Provides tool for reading in shapefiles
                here # For constructing filepaths relative to root directory
                )
 ```
@@ -63,7 +62,7 @@ Now to read in the shapefile.  The following five files all constitute what is a
 
 ```{r}
 ##Read in shapefile - Houston Census Tracts
-houston = readOGR(dsn = here("data"),layer = "HoustonENAR2012final")
+houston = st_read(dsn = here("data"),layer = "HoustonENAR2012final")
 ```
 ***
 
