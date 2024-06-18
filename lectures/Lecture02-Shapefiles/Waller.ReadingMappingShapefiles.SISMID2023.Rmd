@@ -42,13 +42,14 @@ First, load the libraries. The working directory should automatically be set to 
 
 ```{r, warning=FALSE}
 ##Load libraries
-
-library(maptools)     # loads sp library too
-library(RColorBrewer) # creates nice color schemes
-library(classInt)     # finds class intervals for continuous variables
-library(spgwr)        # Adds the geographically weighted regression functions
-library(rgdal)        # Provides tool for reading in shapefiles
-library(here)         # For constructing filepaths relative to root directory
+#install.packages("pacman")
+pacman::p_load(maptools, # loads sp library too
+               RColorBrewer, # creates nice color schemes
+               ClassInt,  # finds class intervals for continuous variables
+               spgwr, # Adds the geographically weighted regression functions
+               rgdal, # Provides tool for reading in shapefiles
+               here # For constructing filepaths relative to root directory
+               )
 ```
 ***
 
